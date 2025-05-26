@@ -1,0 +1,79 @@
+{
+  "name": "Is It Clean? - Dietary Scanner",
+  "short_name": "Is It Clean?",
+  "description": "Advanced OCR-powered dietary scanner for instant ingredient analysis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "categories": ["food", "health", "lifestyle", "utilities"],
+  "lang": "en",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-apple-touch.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile scanning interface"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop preview"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Scan",
+      "short_name": "Scan",
+      "description": "Start scanning a product immediately",
+      "url": "/?action=scan",
+      "icons": [
+        {
+          "src": "/icon-scan.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Scan History",
+      "short_name": "History",
+      "description": "View your recent scans",
+      "url": "/?action=history",
+      "icons": [
+        {
+          "src": "/icon-history.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}

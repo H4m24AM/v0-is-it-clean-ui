@@ -54,6 +54,7 @@ type Corner = {
 }
 
 export default function IsItCleanApp() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanState, setScanState] = useState<ScanState>("idle")
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [extractedText, setExtractedText] = useState("")
@@ -65,7 +66,6 @@ export default function IsItCleanApp() {
   const [organicCheck, setOrganicCheck] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [showFAQ, setShowFAQ] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [ocrProgress, setOcrProgress] = useState(0)
   const [ocrError, setOcrError] = useState<string | null>(null)
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null)
@@ -687,62 +687,48 @@ export default function IsItCleanApp() {
     return cleaned
   }
 
-  const analyzeIngredients = () => {
-    setScanState("analyzing")
+ const analyzeIngredients = async () => {
+  if (!extractedText.trim()) return;
+  setScanState("analyzing");
 
-    // Simulate GPT analysis with enhanced features
-    setTimeout(() => {
-      // Mock problem ingredients detection
-      const mockProblemIngredients = ["gelatin", "milk powder"]
-      setProblemIngredients(mockProblemIngredients)
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ingredients: extractedText }),
+    });
 
-      // Mock confidence level based on ingredient certainty
-      const uncertainWords = ["may contain", "derived from", "natural flavors"]
-      const hasUncertainty = uncertainWords.some((word) => extractedText.toLowerCase().includes(word))
-      setConfidenceLevel(hasUncertainty ? "medium" : "high")
+    const result = await response.json();
 
-      // Mock health rating (1-5 stars)
-      const additiveCount = (extractedText.match(/sodium|artificial|preservative/gi) || []).length
-      setHealthRating(Math.max(1, 5 - additiveCount))
+    const results: DietaryCheck[] = dietaryChecks.map((check) => {
+      const verdict = result[check.id];
+      return {
+        ...check,
+        status: verdict?.status === "Compliant" ? "pass" : "fail",
+        explanation: verdict?.status === "Compliant" ? check.explanation : verdict?.reason || check.failReason,
+      };
+    });
 
-      // Mock suggestions for failed checks
-      setSuggestions([
-        "Try Organic Valley Milk - certified organic and clean",
-        "Consider Simply Orange - no artificial additives",
-        "Look for products with USDA Organic certification",
-      ])
+    setCurrentResult(results);
+    setScanState("complete");
 
-      const results: DietaryCheck[] = dietaryChecks.map((check) => {
-        if (!check.enabled) return { ...check, status: "unknown" as const }
+    // Add to scan history
+    const newScan: ScanResult = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      productName: "Product Analysis",
+      checks: results,
+    };
 
-        const mockResults = {
-          halal: { status: mockProblemIngredients.length > 0 ? ("fail" as const) : ("pass" as const) },
-          vegan: { status: mockProblemIngredients.includes("milk powder") ? ("fail" as const) : ("pass" as const) },
-          kosher: { status: mockProblemIngredients.includes("gelatin") ? ("fail" as const) : ("pass" as const) },
-          organic: { status: "fail" as const },
-        }
-
-        return {
-          ...check,
-          status: mockResults[check.id as keyof typeof mockResults]?.status || "unknown",
-        }
-      })
-
-      setCurrentResult(results)
-      setScanState("complete")
-
-      // Add to scan history
-      const newScan: ScanResult = {
-        id: Date.now().toString(),
-        timestamp: new Date(),
-        productName: "Product Analysis",
-        checks: results,
-      }
-
-      const updatedHistory = [newScan, ...scanHistory].slice(0, 5)
-      saveScanHistory(updatedHistory)
-    }, 2000)
+    const updatedHistory = [newScan, ...scanHistory].slice(0, 5);
+    saveScanHistory(updatedHistory);
+  } catch (error) {
+    console.error("GPT API Error:", error);
+    setScanState("idle");
   }
+};
 
   const shareResults = async () => {
     if (!currentResult) return
@@ -1107,28 +1093,36 @@ export default function IsItCleanApp() {
                 <Camera className="h-8 w-8 text-green-600" />
               </div>
               <div>
-                <Button
-                  onClick={() => {
-                    console.log("Upload button clicked")
-                    console.log("File input ref:", fileInputRef.current)
-                    fileInputRef.current?.click()
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="lg"
-                  disabled={!dietaryChecks.some((check) => check.enabled)}
-                >
-                  <Upload className="mr-2 h-5 w-5" />
-                  Scan Product Label
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  style={{ display: "none" }}
-                />
+            <div className="text-center space-y-4">
+  <Button
+    onClick={() => {
+      console.log("Upload button clicked");
+      if (fileInputRef.current) {
+        console.log("File input is ready, clicking...");
+        fileInputRef.current.click();
+      } else {
+        console.log("File input ref is null.");
+      }
+    }}
+    className="bg-green-600 hover:bg-green-700 text-white"
+    size="lg"
+    disabled={!dietaryChecks.some((check) => check.enabled)}
+  >
+    <Upload className="mr-2 h-5 w-5" />
+    Scan Product Label
+  </Button>
+
+  {/* ✅ File input is now separate and fully functional */}
+  <input
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    capture="environment"
+    onChange={handleFileUpload}
+    className="hidden"
+  />
+</div>
+
               </div>
               <p className="text-xs text-gray-500 max-w-xs mx-auto">
                 Advanced OCR technology processes images locally on your device

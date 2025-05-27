@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Tesseract from "tesseract.js"
+import { PSM } from "tesseract.js"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -138,7 +139,8 @@ export default function IsItCleanApp() {
       explanation: "Certified organic ingredients",
       failReason: "No organic certification found",
       enabled: false,
-    };
+    },
+  ]);
   const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {
@@ -147,9 +149,6 @@ export default function IsItCleanApp() {
   }
 }, []);
 
-
-
-  ])
 
   // Load scan history from localStorage on mount
   useEffect(() => {
@@ -485,6 +484,8 @@ export default function IsItCleanApp() {
       img.src = imageDataUrl
     })
   }
+        let worker: Tesseract.Worker | null = null
+
 
   const applySharpeningFilter = (imageData: ImageData, intensity: number): ImageData => {
     const data = imageData.data
@@ -611,7 +612,6 @@ export default function IsItCleanApp() {
       ]
 
       let extractedText = ""
-      let worker: Tesseract.Worker | null = null
 
       for (let i = 0; i < languagesToTry.length; i++) {
         const langCode = languagesToTry[i]
@@ -620,25 +620,25 @@ export default function IsItCleanApp() {
           setDetectedLanguage(langCode)
 
           // Initialize Tesseract worker with current language
-          worker = await Tesseract.createWorker(langCode)
+          worker = await Tesseract.createWorker({
+    logger: (m) => {
+      if (m.status === "recognizing text") {
+        setOcrProgress(Math.round(m.progress * 100));
+      }
+    },
+  })
 
           // Configure for better ingredient label recognition
           await worker.setParameters({
             tessedit_char_whitelist:
               "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,()-/%أبتثجحخدذذرزسشصضطظعغفقكلمنهويىءآإؤئةÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ",
-            tessedit_pageseg_mode: "6", // Uniform block of text
+            tessedit_pageseg_mode: PSM.SINGLE_BLOCK, // Uniform block of text
           })
 
           // Perform OCR with progress tracking
           const {
             data: { text, confidence },
-          } = await worker.recognize(imageToProcess, {
-            logger: (m) => {
-              if (m.status === "recognizing text") {
-                setOcrProgress(Math.round(m.progress * 100))
-              }
-            },
-          })
+          } = await worker.recognize(imageToProcess);
 
           await worker.terminate()
           worker = null
@@ -1025,7 +1025,7 @@ export default function IsItCleanApp() {
                     <div className="w-2 h-2 bg-slate-400 rounded-full mt-2 flex-shrink-0"></div>
                     <div>
                       <p className="text-slate-600 text-sm">
-                        Copy URL: <code className="bg-slate-100 px-2 py-1 rounded text-xs">{window.location.href}</code>
+                        Copy URL: <code className="bg-slate-100 px-2 py-1 rounded text-xs">{currentUrl}</code>
                       </p>
                     </div>
                   </div>

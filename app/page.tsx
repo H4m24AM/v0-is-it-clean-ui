@@ -96,7 +96,6 @@ export default function IsItCleanApp() {
 
   // Add this hook after the existing state declarations
   const [isMobile, setIsMobile] = useState(false)
-
   const languages = {
     en: { name: "English", flag: "🇺🇸", ocrCode: "eng", rtl: false },
     ar: { name: "العربية", flag: "🇸🇦", ocrCode: "ara", rtl: true },
@@ -139,7 +138,7 @@ export default function IsItCleanApp() {
       explanation: "Certified organic ingredients",
       failReason: "No organic certification found",
       enabled: false,
-    },
+    };
   const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {

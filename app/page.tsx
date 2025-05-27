@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import type React from "react"
 
@@ -140,6 +140,16 @@ export default function IsItCleanApp() {
       failReason: "No organic certification found",
       enabled: false,
     },
+  const [currentUrl, setCurrentUrl] = useState('');
+
+  useEffect(() => {
+  if (typeof window !== 'undefined') {
+    setCurrentUrl(window.location.href);
+  }
+}, []);
+
+
+
   ])
 
   // Load scan history from localStorage on mount
@@ -152,16 +162,20 @@ export default function IsItCleanApp() {
 
   // Add device detection useEffect after the existing useEffects
   useEffect(() => {
-    const checkDevice = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera
-      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-      setIsMobile(mobileRegex.test(userAgent) || window.innerWidth <= 768)
-    }
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
 
-    checkDevice()
-    window.addEventListener("resize", checkDevice)
-    return () => window.removeEventListener("resize", checkDevice)
-  }, [])
+  const checkDevice = () => {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    setIsMobile(mobileRegex.test(userAgent) || window.innerWidth <= 768);
+  };
+
+  checkDevice();
+  window.addEventListener('resize', checkDevice);
+
+  return () => window.removeEventListener('resize', checkDevice);
+}, []);
+
 
   // Save scan history to localStorage
   const saveScanHistory = (history: ScanResult[]) => {
@@ -741,7 +755,8 @@ export default function IsItCleanApp() {
         await navigator.share({
           title: "Is It Clean? Scan Results",
           text: summary,
-          url: window.location.href,
+          url: typeof window !== 'undefined' ? window.location.href : '',
+
         })
       } catch (err) {
         // Fallback to clipboard

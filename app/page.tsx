@@ -554,8 +554,6 @@ export default function IsItCleanApp() {
       setScanState("uploading")
       const reader = new FileReader()
       reader.onload = async (e) => {
-  try {
-    console.log("📥 File read successfully");
         console.log("File read successfully")
         const originalImage = e.target?.result as string
         setUploadedImage(originalImage)
@@ -582,15 +580,13 @@ export default function IsItCleanApp() {
           setScanState("extracting")
         }
       }
-      reader.onerror = (error) => {
-        console.error("File read error:", error)
-        setScanState("idle")
-      }
-        } catch (err) {
-    console.error("❌ Error in reader.onload:", err);
-    setScanState("extracting");
-  }
-  reader.readAsDataURL(file)
+      
+      reader.readAsDataURL(file)
+
+  reader.onerror = (error) => {
+    console.error("File read error:", error);
+    setScanState("idle");
+  };
     } else {
       console.log("No file selected")
     }

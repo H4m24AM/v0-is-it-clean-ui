@@ -554,6 +554,8 @@ export default function IsItCleanApp() {
       setScanState("uploading")
       const reader = new FileReader()
       reader.onload = async (e) => {
+  try {
+    console.log("📥 File read successfully");
         console.log("File read successfully")
         const originalImage = e.target?.result as string
         setUploadedImage(originalImage)
@@ -584,7 +586,11 @@ export default function IsItCleanApp() {
         console.error("File read error:", error)
         setScanState("idle")
       }
-      reader.readAsDataURL(file)
+        } catch (err) {
+    console.error("❌ Error in reader.onload:", err);
+    setScanState("extracting");
+  }
+  reader.readAsDataURL(file)
     } else {
       console.log("No file selected")
     }
@@ -639,6 +645,9 @@ export default function IsItCleanApp() {
           const {
             data: { text, confidence },
           } = await worker.recognize(imageToProcess);
+console.log("🔍 OCR Text:", text);
+console.log("📊 Confidence:", confidence);
+console.log("🈶 Language:", langCode);
 
           await worker.terminate()
           worker = null
@@ -674,6 +683,9 @@ export default function IsItCleanApp() {
       }
 
       setScanState("extracting")
+      if (!extractedText) {
+        setExtractedText("No text detected. Try a clearer image.")
+      }
     } catch (error) {
       console.error("OCR Error:", error)
       setOcrError("Failed to read image. Please try a clearer photo or enter ingredients manually.")

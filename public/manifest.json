@@ -1,11 +1,11 @@
 {
-  "name": "Is It Clean? - Dietary Scanner",
-  "short_name": "Is It Clean?",
-  "description": "Advanced OCR-powered dietary scanner for instant ingredient analysis",
+  "name": "CleanBite - AI Food Scanner",
+  "short_name": "CleanBite",
+  "description": "AI-powered food label scanner for dietary compliance checking",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "background_color": "#eff4e0",
+  "theme_color": "#2b583a",
   "orientation": "portrait-primary",
   "categories": ["food", "health", "lifestyle", "utilities"],
   "lang": "en",
@@ -35,21 +35,21 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Mobile scanning interface"
+      "label": "CleanBite mobile scanning interface"
     },
     {
       "src": "/screenshot-desktop.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Desktop preview"
+      "label": "CleanBite desktop preview"
     }
   ],
   "shortcuts": [
     {
       "name": "Quick Scan",
       "short_name": "Scan",
-      "description": "Start scanning a product immediately",
+      "description": "Start scanning a product immediately with CleanBite",
       "url": "/?action=scan",
       "icons": [
         {
@@ -61,7 +61,7 @@
     {
       "name": "Scan History",
       "short_name": "History",
-      "description": "View your recent scans",
+      "description": "View your recent scans with CleanBite",
       "url": "/?action=history",
       "icons": [
         {

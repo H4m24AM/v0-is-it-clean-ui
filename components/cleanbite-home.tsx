@@ -56,11 +56,7 @@ export default function CleanBiteHome({ onScanStart, onShowHistory, language, on
       <div className="max-w-md mx-auto px-6 pt-12 pb-8 space-y-8">
         {/* Main Question */}
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-black leading-tight">
-            What are your
-            <br />
-            dietary preferences?
-          </h2>
+          <h2 className="text-4xl font-bold text-black leading-tight">Select Your CleanBite</h2>
         </div>
 
         {/* Dropdown Selector */}
@@ -76,7 +72,7 @@ export default function CleanBiteHome({ onScanStart, onShowHistory, language, on
 
             {/* Dropdown Options */}
             {showDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="absolute top-14 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                 {dietaryOptions.map((option) => (
                   <button
                     key={option.value}
@@ -92,19 +88,11 @@ export default function CleanBiteHome({ onScanStart, onShowHistory, language, on
             )}
           </div>
 
-          {/* Options List (Always Visible) */}
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            {dietaryOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setSelectedPreference(option.value)}
-                className={`w-full px-4 py-4 text-left text-lg font-medium border-b border-gray-100 last:border-b-0 transition-colors ${
-                  selectedPreference === option.value ? "bg-[#2b583a] text-white" : "text-black hover:bg-gray-50"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+          {/* Instructions */}
+          <div className="text-center">
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Choose your dietary preference and scan any food label to instantly check if it meets your requirements.
+            </p>
           </div>
 
           {/* Custom Restriction Input */}

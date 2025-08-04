@@ -63,21 +63,63 @@ export default function CleanBiteApp() {
     })
   }
 
+  // Function to resize and compress image
+  const processImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          const MAX_WIDTH = 1200 // Max width/height for the image
+          const MAX_HEIGHT = 1200
+          let width = img.width
+          let height = img.height
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width
+              width = MAX_WIDTH
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height
+              height = MAX_HEIGHT
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext("2d")
+          if (!ctx) {
+            reject(new Error("Could not get canvas context"))
+            return
+          }
+          ctx.drawImage(img, 0, 0, width, height)
+
+          // Convert canvas to base64 JPEG with compression
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7) // 0.7 is quality (70%)
+          resolve(dataUrl)
+        }
+        img.onerror = (error) => reject(error)
+        img.src = event.target?.result as string
+      }
+      reader.onerror = (error) => reject(error)
+      reader.readAsDataURL(file)
+    })
+  }
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !scanData) return
 
-    setUploadedImage(URL.createObjectURL(file))
     setIsScanning(true)
     setScanProgress(0)
 
     try {
-      // Convert file to base64 for API
-      const base64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result as string)
-        reader.readAsDataURL(file)
-      })
+      // Process and compress the image before sending
+      const processedBase64Image = await processImage(file)
+      setUploadedImage(processedBase64Image) // Set the processed image for display
 
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
@@ -89,7 +131,7 @@ export default function CleanBiteApp() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          image: base64,
+          image: processedBase64Image, // Send the processed image
           preference: scanData.preference,
           customRestriction: scanData.customRestriction,
         }),

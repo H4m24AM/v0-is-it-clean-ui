@@ -63,28 +63,30 @@ export default function CleanBiteApp() {
     })
   }
 
-  // Function to resize and compress image
+  // Function to resize and compress image more aggressively
   const processImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = (event) => {
         const img = new Image()
+        img.crossOrigin = "anonymous" // Important for canvas operations to avoid CORS issues
         img.onload = () => {
           const canvas = document.createElement("canvas")
-          const MAX_WIDTH = 1200 // Max width/height for the image
-          const MAX_HEIGHT = 1200
+          // Reduced max dimensions for better mobile performance and lower memory
+          const MAX_DIMENSION = 1024 // Max width or height for the image
           let width = img.width
           let height = img.height
 
+          // Calculate new dimensions while maintaining aspect ratio
           if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width
-              width = MAX_WIDTH
+            if (width > MAX_DIMENSION) {
+              height *= MAX_DIMENSION / width
+              width = MAX_DIMENSION
             }
           } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height
-              height = MAX_HEIGHT
+            if (height > MAX_DIMENSION) {
+              width *= MAX_DIMENSION / height
+              height = MAX_DIMENSION
             }
           }
 
@@ -97,15 +99,27 @@ export default function CleanBiteApp() {
           }
           ctx.drawImage(img, 0, 0, width, height)
 
-          // Convert canvas to base64 JPEG with compression
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7) // 0.7 is quality (70%)
-          resolve(dataUrl)
+          try {
+            // Convert canvas to base64 JPEG with more compression
+            // Quality reduced to 0.6 (60%) for smaller file size
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.6)
+            console.log(`Processed image dimensions: ${width}x${height}, Data URL size: ${dataUrl.length / 1024} KB`)
+            resolve(dataUrl)
+          } catch (canvasError) {
+            console.error("Error converting canvas to Data URL:", canvasError)
+            reject(new Error("Failed to compress image. Please try a smaller image."))
+          }
         }
-        img.onerror = (error) => reject(error)
-        img.src = event.target?.result as string
+        img.onerror = (error) => {
+          console.error("Error loading image for processing:", error)
+          reject(new Error("Failed to load image. Please try another file."))
+        }
+        reader.readAsDataURL(file)
       }
-      reader.onerror = (error) => reject(error)
-      reader.readAsDataURL(file)
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error)
+        reject(new Error("Failed to read file. Please try again."))
+      }
     })
   }
 
@@ -115,6 +129,11 @@ export default function CleanBiteApp() {
 
     setIsScanning(true)
     setScanProgress(0)
+
+    // Revoke previous blob URL if it exists to free up memory
+    if (uploadedImage) {
+      URL.revokeObjectURL(uploadedImage)
+    }
 
     try {
       // Process and compress the image before sending
